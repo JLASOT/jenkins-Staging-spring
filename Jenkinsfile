@@ -7,7 +7,8 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/JLASOT/jenkins-Staging-spring.git'
+                //git 'https://github.com/JLASOT/jenkins-Staging-spring.git'
+                git branch: 'main', url: 'https://github.com/JLASOT/jenkins-Staging-spring.git'
             }
         }
         stage('Build') {
