@@ -35,14 +35,24 @@ pipeline {
         stage('Deploy to Staging') {
             steps {
                 sshagent(['spring-docker-key']) {
+                    // sh 'scp -o StrictHostKeyChecking=no target/${ARTIFACT_NAME} $STAGING_SERVER:/home/springuser/staging/'
+                    // sh 'ssh -o StrictHostKeyChecking=no $STAGING_SERVER "nohup java -jar /home/springuser/staging/${ARTIFACT_NAME} > /dev/null 2>&1 &"'
+                     // Copiar artefacto
                     sh 'scp -o StrictHostKeyChecking=no target/${ARTIFACT_NAME} $STAGING_SERVER:/home/springuser/staging/'
-                    sh 'ssh -o StrictHostKeyChecking=no $STAGING_SERVER "nohup java -jar /home/springuser/staging/${ARTIFACT_NAME} > /dev/null 2>&1 &"'
+
+                    // Arrancar la app en background con logs
+                    sh '''
+                    ssh -o StrictHostKeyChecking=no $STAGING_SERVER "
+                    pkill -f '${ARTIFACT_NAME}' || true
+                    nohup java -jar /home/springuser/staging/${ARTIFACT_NAME} > /home/springuser/staging/spring.log 2>&1 &
+                    "
+                    '''
                 }
             }
         }
         stage('Validate Deployment') {
             steps {
-                sh 'sleep 10'
+                sh 'sleep 20'
                 sh 'curl --fail http://spring-docker:8080/health'
             }
         }
