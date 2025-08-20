@@ -33,8 +33,10 @@ pipeline {
         }
         stage('Deploy to Staging') {
             steps {
-                sh 'scp target/${ARTIFACT_NAME} $STAGING_SERVER:/home/springuser/staging/'
-                sh 'ssh $STAGING_SERVER "nohup java -jar /home/springuser/staging/${ARTIFACT_NAME} > /dev/null 2>&1 &"'
+                sshagent(['spring-docker-key']) {
+                    sh 'scp -o StrictHostKeyChecking=no target/${ARTIFACT_NAME} $STAGING_SERVER:/home/springuser/staging/'
+                    sh 'ssh -o StrictHostKeyChecking=no $STAGING_SERVER "nohup java -jar /home/springuser/staging/${ARTIFACT_NAME} > /dev/null 2>&1 &"'
+                }
             }
         }
         stage('Validate Deployment') {
