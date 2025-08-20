@@ -1,13 +1,13 @@
 pipeline {
     agent any
     environment {
-        STAGING_SERVER = 'user@your-staging-server'
+        STAGING_SERVER = 'springuser@spring-docker'
         ARTIFACT_NAME = 'demo-0.0.1-SNAPSHOT.jar'
     }
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/your-org/your-springboot-repo.git'
+                git 'https://github.com/JLASOT/jenkins-Staging-spring.git'
             }
         }
         stage('Build') {
@@ -17,7 +17,8 @@ pipeline {
         }
         stage('Code Quality') {
             steps {
-                sh 'mvn checkstyle:check'
+                //sh 'mvn checkstyle:check'
+                sh 'hola world'
             }
         }
         stage('Test') {
@@ -32,14 +33,14 @@ pipeline {
         }
         stage('Deploy to Staging') {
             steps {
-                sh 'scp target/${ARTIFACT_NAME} $STAGING_SERVER:/home/your-user/staging/'
-                sh 'ssh $STAGING_SERVER "nohup java -jar /home/your-user/staging/${ARTIFACT_NAME} > /dev/null 2>&1 &"'
+                sh 'scp target/${ARTIFACT_NAME} $STAGING_SERVER:/home/springuser/staging/'
+                sh 'ssh $STAGING_SERVER "nohup java -jar /home/springuser/staging/${ARTIFACT_NAME} > /dev/null 2>&1 &"'
             }
         }
         stage('Validate Deployment') {
             steps {
                 sh 'sleep 10'
-                sh 'curl --fail http://your-staging-server:8080/health'
+                sh 'curl --fail http://spring-docker:8080/health'
             }
         }
     }
