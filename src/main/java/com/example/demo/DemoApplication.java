@@ -15,7 +15,7 @@ public class DemoApplication {
 
     @GetMapping("/")
     public String root() {
-        return "Application is running!";
+        return "Application is running 2222!";
     }
 
     @GetMapping("/health")
