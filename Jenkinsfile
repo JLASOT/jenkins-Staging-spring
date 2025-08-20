@@ -57,12 +57,13 @@ pipeline {
                     // sh 'ssh -o StrictHostKeyChecking=no $STAGING_SERVER "nohup java -jar /home/springuser/staging/${ARTIFACT_NAME} > /home/springuser/staging/spring.log 2>&1 &"'
                     // sh 'ssh -o StrictHostKeyChecking=no $STAGING_SERVER "nohup /opt/java/openjdk/bin/java -jar /home/springuser/staging/${ARTIFACT_NAME} > /home/springuser/staging/spring.log 2>&1 &"'
                      // Matar proceso anterior y arrancar la app en background con logs
-                    sh '''
-                    ssh -o StrictHostKeyChecking=no $STAGING_SERVER "
-                    pkill -f ${ARTIFACT_NAME} || true
-                    nohup /opt/java/openjdk/bin/java -jar /home/springuser/staging/${ARTIFACT_NAME} > /home/springuser/staging/spring.log 2>&1 &
-                    "
-                    '''
+                    sh """
+                    ssh -o StrictHostKeyChecking=no $STAGING_SERVER '
+                      pkill -f ${ARTIFACT_NAME} || true
+                      nohup /opt/java/openjdk/bin/java -jar /home/springuser/staging/${ARTIFACT_NAME} > /home/springuser/staging/spring.log 2>&1 &
+                    '
+                    """
+
                 }
             }
         }
