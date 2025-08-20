@@ -19,7 +19,7 @@ pipeline {
         stage('Code Quality') {
             steps {
                 //sh 'mvn checkstyle:check'
-                sh 'hola world'
+                echo 'Skipping code quality check'
             }
         }
         stage('Test') {
