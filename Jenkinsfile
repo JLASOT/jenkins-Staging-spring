@@ -35,7 +35,20 @@ pipeline {
         stage('Prepare Staging Server') {
             steps {
                 sshagent(['spring-docker-key']) {
-                    sh 'ssh -o StrictHostKeyChecking=no $STAGING_SERVER "pkill -f ${ARTIFACT_NAME} || true"'
+                    // sh 'ssh -o StrictHostKeyChecking=no $STAGING_SERVER "pkill -f ${ARTIFACT_NAME} || true"'
+                    script {
+                        sh """
+                        ssh -o StrictHostKeyChecking=no $STAGING_SERVER '
+                          pid=\$(pgrep -f ${ARTIFACT_NAME} || true)
+                          if [ -n "\$pid" ]; then
+                            echo "Matando proceso \$pid"
+                            kill -9 \$pid || true
+                          else
+                            echo "No hay procesos corriendo"
+                          fi
+                        '
+                        """
+                    }
                 }
             }
         }
