@@ -32,21 +32,17 @@ pipeline {
                 sh 'mvn jacoco:report'
             }
         }
+        stage('Prepare Staging Server') {
+            steps {
+                sshagent(['spring-docker-key']) {
+                    sh 'ssh -o StrictHostKeyChecking=no $STAGING_SERVER "pkill -f ${ARTIFACT_NAME} || true"'
+                }
+            }
+        }
         stage('Deploy to Staging') {
             steps {
                 sshagent(['spring-docker-key']) {
-                    // sh 'scp -o StrictHostKeyChecking=no target/${ARTIFACT_NAME} $STAGING_SERVER:/home/springuser/staging/'
-                    // sh 'ssh -o StrictHostKeyChecking=no $STAGING_SERVER "nohup java -jar /home/springuser/staging/${ARTIFACT_NAME} > /dev/null 2>&1 &"'
-                     // Copiar artefacto
-                    // sh 'scp -o StrictHostKeyChecking=no target/${ARTIFACT_NAME} $STAGING_SERVER:/home/springuser/staging/'
-
-                    // // Arrancar la app en background con logs
-                    // sh '''
-                    // ssh -o StrictHostKeyChecking=no $STAGING_SERVER "
-                    // pkill -f '${ARTIFACT_NAME}' || true
-                    // nohup java -jar /home/springuser/staging/${ARTIFACT_NAME} > /home/springuser/staging/spring.log 2>&1 &
-                    // "
-                    // '''
+   
                      // Copiar el artefacto al servidor
                     sh 'scp -o StrictHostKeyChecking=no target/${ARTIFACT_NAME} $STAGING_SERVER:/home/springuser/staging/'
 
@@ -56,15 +52,6 @@ pipeline {
                     // Arrancar la aplicación en background con logs
                     // sh 'ssh -o StrictHostKeyChecking=no $STAGING_SERVER "nohup java -jar /home/springuser/staging/${ARTIFACT_NAME} > /home/springuser/staging/spring.log 2>&1 &"'
                     sh 'ssh -o StrictHostKeyChecking=no $STAGING_SERVER "nohup /opt/java/openjdk/bin/java -jar /home/springuser/staging/${ARTIFACT_NAME} > /home/springuser/staging/spring.log 2>&1 &"'
-                     // Matar proceso anterior y arrancar la app en background con logs
-                    // sh """
-                    //     ssh -o StrictHostKeyChecking=no $STAGING_SERVER '
-                    //     pkill -f ${ARTIFACT_NAME} || true
-                    //     nohup /opt/java/openjdk/bin/java -jar /home/springuser/staging/${ARTIFACT_NAME} > /home/springuser/staging/spring.log 2>&1 &
-                    //     exit 0
-                    // '
-                    // """
-
 
                 }
             }
