@@ -32,26 +32,7 @@ pipeline {
                 sh 'mvn jacoco:report'
             }
         }
-        // stage('Prepare Staging Server') {
-        //     steps {
-        //         sshagent(['spring-docker-key']) {
-        //             // sh 'ssh -o StrictHostKeyChecking=no $STAGING_SERVER "pkill -f ${ARTIFACT_NAME} || true"'
-        //             script {
-        //                 sh """
-        //                 ssh -o StrictHostKeyChecking=no $STAGING_SERVER '
-        //                   pid=\$(pgrep -f ${ARTIFACT_NAME} || true)
-        //                   if [ -n "\$pid" ]; then
-        //                     echo "Matando proceso \$pid"
-        //                     kill -9 \$pid || true
-        //                   else
-        //                     echo "No hay procesos corriendo"
-        //                   fi
-        //                 '
-        //                 """
-        //             }
-        //         }
-        //     }
-        // }
+        // Mata el proceso anterior si está corriendo la app para evitar conflictos
         stage('Prepare Staging Server') {
             steps {
                 sshagent(['spring-docker-key']) {
@@ -83,11 +64,7 @@ pipeline {
                      // Copiar el artefacto al servidor
                     sh 'scp -o StrictHostKeyChecking=no target/${ARTIFACT_NAME} $STAGING_SERVER:/home/springuser/staging/'
 
-                    // Matar proceso anterior si existe
-                    // sh 'ssh -o StrictHostKeyChecking=no $STAGING_SERVER "pkill -f ${ARTIFACT_NAME} || true"'
-
-                    // Arrancar la aplicación en background con logs
-                    // sh 'ssh -o StrictHostKeyChecking=no $STAGING_SERVER "nohup java -jar /home/springuser/staging/${ARTIFACT_NAME} > /home/springuser/staging/spring.log 2>&1 &"'
+                     // ejecutar la aplicación con Java en segundo plano
                     sh 'ssh -o StrictHostKeyChecking=no $STAGING_SERVER "nohup /opt/java/openjdk/bin/java -jar /home/springuser/staging/${ARTIFACT_NAME} > /home/springuser/staging/spring.log 2>&1 &"'
 
                 }
@@ -98,6 +75,11 @@ pipeline {
                 sh 'sleep 20'
                 sh 'curl --fail http://spring-docker:8080/health'
             }
+        }
+    }
+    post {
+        always {
+            archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
         }
     }
 }
